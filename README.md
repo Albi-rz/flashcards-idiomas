@@ -23,4 +23,6 @@ Todo el contenido y la lógica están en un único archivo `index.html` (sin dep
 - [x] Racha de días y contador de tarjetas dominadas
 - [x] Modo de práctica: escribir, opción múltiple, dictado y completar espacios (cloze)
 - [x] Mapa de actividad de 13 semanas
+- [x] Meta diaria con barra de progreso y celebración
+- [x] Animaciones de feedback y atajos de teclado
 - [ ] Sincronización de progreso entre dispositivos
