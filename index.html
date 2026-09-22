@@ -105,6 +105,24 @@
   .card-text { font-size: 1.4rem; font-weight: 600; line-height: 1.4; }
   .card-hint { position: absolute; bottom: 14px; font-size: 0.75rem; color: var(--text-muted); }
   .back-text { color: var(--accent); }
+  .speak-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .speak-btn:active { transform: scale(0.94); }
+  .speak-btn[disabled] { opacity: 0.3; cursor: default; }
 
   .buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px; }
   button.rate { padding: 12px 4px; border-radius: 12px; border: none; font-size: 0.8rem; font-weight: 600; color: white; cursor: pointer; }
@@ -142,6 +160,7 @@
   <div class="card-area">
     <div class="card" id="card">
       <span class="tag-chip" id="tagChip"></span>
+      <button class="speak-btn" id="speakBtn" title="Escuchar pronunciación">🔊</button>
       <div class="card-text" id="cardText">Cargando…</div>
       <div class="card-hint" id="cardHint">Toca para ver la traducción</div>
     </div>
@@ -426,24 +445,54 @@ function showNext() {
   renderCard();
 }
 
+const SPEECH_LANG = { en: "en-US", pt: "pt-BR" };
+
+function cleanForSpeech(text) {
+  // strip parenthetical notes and leading "to " so TTS sounds natural
+  return text.replace(/\([^)]*\)/g, "").trim();
+}
+
+function speakCurrentFront() {
+  const deck = DECKS[currentLang];
+  if (currentIndex === -1 || !deck[currentIndex]) return;
+  if (!("speechSynthesis" in window)) return;
+  try {
+    window.speechSynthesis.cancel();
+    const text = cleanForSpeech(deck[currentIndex][0]);
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = SPEECH_LANG[currentLang];
+    utter.rate = 0.9;
+    window.speechSynthesis.speak(utter);
+  } catch (e) {}
+}
+
 function renderCard() {
   const deck = DECKS[currentLang];
   const [front, back, tag] = deck[currentIndex];
   const card = document.getElementById("card");
   card.innerHTML = `
     <span class="tag-chip">${tag}</span>
+    <button class="speak-btn" id="speakBtn" title="Escuchar pronunciación">🔊</button>
     <div class="card-text" id="cardText">${showingBack ? back : front}</div>
     <div class="card-hint">${showingBack ? "" : "Toca para ver la traducción"}</div>
   `;
   if (showingBack) card.querySelector(".card-text").classList.add("back-text");
+  if (!("speechSynthesis" in window)) {
+    document.getElementById("speakBtn").disabled = true;
+  }
 }
 
 function setButtonsEnabled(enabled) {
   document.querySelectorAll("button.rate").forEach(b => b.disabled = !enabled);
 }
 
-document.getElementById("card").addEventListener("click", () => {
+document.getElementById("card").addEventListener("click", (e) => {
   if (currentIndex === -1) return;
+  if (e.target && e.target.id === "speakBtn") {
+    e.stopPropagation();
+    speakCurrentFront();
+    return;
+  }
   showingBack = !showingBack;
   renderCard();
 });
