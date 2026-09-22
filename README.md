@@ -21,5 +21,6 @@ Todo el contenido y la lógica están en un único archivo `index.html` (sin dep
 - [x] Verbos irregulares (inglés) y conjugación (portugués)
 - [x] Falsos amigos con el español (ambos idiomas)
 - [x] Racha de días y contador de tarjetas dominadas
-- [ ] Modo de quiz de gramática (completar espacios, opción múltiple)
+- [x] Modo de práctica: escribir, opción múltiple, dictado y completar espacios (cloze)
+- [x] Mapa de actividad de 13 semanas
 - [ ] Sincronización de progreso entre dispositivos
