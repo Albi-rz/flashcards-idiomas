@@ -1,14 +1,25 @@
 # Flashcards Idiomas 🇬🇧🇧🇷
 
-App de flashcards con repetición espaciada (estilo SM-2) para aprender **inglés** y **portugués**, pensada para complementar el trabajo diario en data engineering, dashboards y ciberseguridad.
+App de flashcards con repetición espaciada (estilo SM-2) para aprender **inglés** y **portugués**, con pronunciación (text-to-speech), ejemplos de uso, y una pestaña de gramática explicada para cada idioma según sus propias trampas frente al español.
 
 ## Cómo usar
-Abre `index.html` (o la versión publicada en GitHub Pages) en el navegador. Elige el idioma arriba, toca la tarjeta para ver la traducción, y califica qué tan bien la recordaste (Again / Hard / Good / Easy). El progreso se guarda localmente en el navegador.
+Abre `index.html` (o la versión publicada en GitHub Pages) en el navegador. Elige el idioma y la vista (tarjetas / gramática) arriba. En tarjetas: toca para voltear, usa 🔊 para escuchar la pronunciación, y califica qué tan bien la recordaste (again/hard/good/easy). El progreso, la racha de días y las tarjetas dominadas se guardan localmente en el navegador.
+
+## Contenido
+- **Inglés:** vocabulario técnico (SQL, JS, Firebase, dashboards, ciberseguridad, GitHub), inglés de trabajo, conversación, verbos irregulares, falsos amigos con el español
+- **Portugués:** saludos y cotidiano, trabajo, números, conversación, viajes, conjugación de verbos regulares/ser-estar-ficar, falsos amigos con el español
+- **Gramática:** reglas explicadas en español, específicas para cada idioma (to be / presente simple vs continuo / preposiciones de tiempo en inglés; pronombres / ser vs estar vs ficar / sonidos nasales en portugués)
 
 ## Estructura
-Todo el contenido y la lógica están en un único archivo `index.html` (sin dependencias externas), así que se puede alojar directo con GitHub Pages.
+Todo el contenido y la lógica están en un único archivo `index.html` (sin dependencias externas más que Google Fonts), así que se puede alojar directo con GitHub Pages.
 
 ## Roadmap
-- [ ] Sumar más vocabulario conforme avance el aprendizaje
-- [ ] Agregar ejemplos de frases por tarjeta
-- [ ] Sincronización entre dispositivos (evaluar backend simple)
+- [x] Pronunciación con voz nativa del navegador
+- [x] Rediseño visual (cuaderno de viaje)
+- [x] Vocabulario de conversación, números y viajes
+- [x] Pestaña de gramática por idioma
+- [x] Verbos irregulares (inglés) y conjugación (portugués)
+- [x] Falsos amigos con el español (ambos idiomas)
+- [x] Racha de días y contador de tarjetas dominadas
+- [ ] Modo de quiz de gramática (completar espacios, opción múltiple)
+- [ ] Sincronización de progreso entre dispositivos
