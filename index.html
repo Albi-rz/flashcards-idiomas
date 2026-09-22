@@ -52,6 +52,11 @@
   .sub { font-size: 0.82rem; color: var(--ink-muted); font-style: italic; font-family: var(--serif); }
   .streak { font-family: var(--mono); font-size: 0.74rem; color: var(--accent); white-space: nowrap; }
 
+  .heatmap { display: grid; grid-template-columns: repeat(13, 1fr); gap: 3px; margin: 10px 0 4px; }
+  .heatmap .day { width: 100%; aspect-ratio: 1; border-radius: 2px; background: var(--line); }
+  .heatmap .day.active { background: var(--accent); }
+  .heatmap .day.today { outline: 1px solid var(--ink-muted); outline-offset: 1px; }
+
   nav.tabs { display: flex; gap: 18px; margin: 16px 0 0; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
   nav.tabs button {
     background: none; border: none; cursor: pointer; font-family: var(--mono); font-size: 0.8rem;
@@ -136,7 +141,7 @@
   .grammar-content strong { color: var(--accent); font-weight: 600; }
   .grammar-content em { font-style: italic; }
 
-  .practice-modes { display: flex; gap: 10px; margin-bottom: 16px; }
+  .practice-modes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px; }
   .practice-modes button {
     flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--line);
     background: var(--surface); color: var(--ink-muted); font-family: var(--mono);
@@ -149,7 +154,7 @@
     padding: 26px 22px; text-align: center; margin-bottom: 16px; min-height: 110px;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
   }
-  .prompt-word { font-family: var(--serif); font-weight: 600; font-size: 1.35rem; margin-bottom: 4px; }
+  .prompt-word { font-family: var(--serif); font-weight: 600; font-size: 1.3rem; margin-bottom: 4px; cursor: pointer; line-height: 1.4; }
   .prompt-tag { font-family: var(--mono); font-size: 0.66rem; color: var(--ink-muted); }
   .type-row { display: flex; gap: 8px; margin-bottom: 12px; }
   .type-row input {
@@ -185,6 +190,7 @@
     </div>
     <div class="streak" id="streakDisplay"></div>
   </header>
+  <div class="heatmap" id="activityHeatmap" title="Días de estudio (últimas 13 semanas)"></div>
 
   <nav class="tabs" id="langTabs">
     <button data-lang="en">Inglés</button>
@@ -243,6 +249,8 @@
     <div class="practice-modes">
       <button data-mode="write" class="active">escribir</button>
       <button data-mode="choice">elegir</button>
+      <button data-mode="listen">escuchar</button>
+      <button data-mode="cloze">completar</button>
     </div>
     <div class="score" id="practiceScore">0 / 0 correctas en esta sesión</div>
 
@@ -261,6 +269,22 @@
 
     <div id="choiceMode" style="display:none">
       <div class="choices" id="choiceOptions"></div>
+    </div>
+
+    <div id="listenMode" style="display:none">
+      <div class="type-row">
+        <input id="listenInput" type="text" placeholder="Escribe lo que escuchaste..." autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+        <button id="listenCheckBtn">Revisar</button>
+      </div>
+      <div class="feedback" id="listenFeedback"></div>
+    </div>
+
+    <div id="clozeMode" style="display:none">
+      <div class="type-row">
+        <input id="clozeInput" type="text" placeholder="Completa el espacio..." autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+        <button id="clozeCheckBtn">Revisar</button>
+      </div>
+      <div class="feedback" id="clozeFeedback"></div>
     </div>
 
     <button class="next-btn" id="nextPracticeBtn">Siguiente →</button>
@@ -916,6 +940,7 @@ function rate(i, q) {
   }
   progress[String(i)] = c;
   saveProgress();
+  logActivityToday();
 }
 
 document.getElementById("resetBtn").addEventListener("click", () => {
@@ -928,6 +953,7 @@ document.getElementById("resetBtn").addEventListener("click", () => {
 let practiceMode = "write";
 let practiceCurrent = null;
 let practiceScore = { correct: 0, total: 0 };
+let clozePoolCache = {};
 
 function normalize(str) {
   return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
@@ -940,20 +966,94 @@ function answerCandidates(meaning) {
 function updatePracticeScore() {
   document.getElementById("practiceScore").textContent = practiceScore.correct + " / " + practiceScore.total + " correctas en esta sesión";
 }
+function recordAttempt(isCorrect) {
+  practiceScore.total++;
+  if (isCorrect) practiceScore.correct++;
+  updatePracticeScore();
+  logActivityToday();
+}
+
+function splitExample(example) {
+  const idx = example.indexOf(" (");
+  if (idx === -1) return { sentence: example, translation: "" };
+  return { sentence: example.slice(0, idx), translation: example.slice(idx + 1).replace(/\)$/, "") };
+}
+function extractCandidateWords(front) {
+  const candidates = [];
+  const noTo = front.replace(/^to\s+/i, "");
+  candidates.push(noTo, front);
+  front.split("/").forEach(p => candidates.push(p.trim()));
+  return candidates.filter(Boolean);
+}
+function buildClozePool(deck) {
+  const pool = [];
+  deck.forEach((c, i) => {
+    const [front, rawBack] = c;
+    const { example } = splitBack(rawBack);
+    if (!example) return;
+    const { sentence } = splitExample(example);
+    for (const cand of extractCandidateWords(front)) {
+      const escaped = cand.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const re = new RegExp("\\b" + escaped + "\\b", "i");
+      const match = sentence.match(re);
+      if (match) { pool.push({ idx: i, target: match[0] }); break; }
+    }
+  });
+  return pool;
+}
+function getClozePool() {
+  if (!clozePoolCache[currentLang]) clozePoolCache[currentLang] = buildClozePool(DECKS[currentLang]);
+  return clozePoolCache[currentLang];
+}
+
+function resetModeUI() {
+  ["writeInput", "listenInput", "clozeInput"].forEach(id => {
+    const el = document.getElementById(id);
+    el.value = ""; el.className = ""; el.disabled = false;
+  });
+  ["writeFeedback", "listenFeedback", "clozeFeedback"].forEach(id => {
+    const el = document.getElementById(id);
+    el.textContent = ""; el.className = "feedback";
+  });
+}
+
 function nextPracticeItem() {
   const deck = DECKS[currentLang];
-  const idx = Math.floor(Math.random() * deck.length);
-  const [front, rawBack, tag] = deck[idx];
-  const { meaning } = splitBack(rawBack);
-  practiceCurrent = { idx, front, meaning, tag };
-  document.getElementById("practiceWord").textContent = front;
-  document.getElementById("practiceTag").textContent = tag;
-  document.getElementById("writeInput").value = "";
-  document.getElementById("writeInput").className = "";
-  document.getElementById("writeFeedback").textContent = "";
-  document.getElementById("writeFeedback").className = "feedback";
-  buildChoices(deck, idx, meaning);
+  resetModeUI();
+  if (practiceMode === "write" || practiceMode === "choice") {
+    const idx = Math.floor(Math.random() * deck.length);
+    const [front, rawBack, tag] = deck[idx];
+    const { meaning } = splitBack(rawBack);
+    practiceCurrent = { idx, front, meaning, tag };
+    document.getElementById("practiceWord").textContent = front;
+    document.getElementById("practiceTag").textContent = tag;
+    if (practiceMode === "choice") buildChoices(deck, idx, meaning);
+  } else if (practiceMode === "listen") {
+    const idx = Math.floor(Math.random() * deck.length);
+    const [front, , tag] = deck[idx];
+    practiceCurrent = { idx, front, tag };
+    document.getElementById("practiceWord").textContent = "🔊 toca para escuchar";
+    document.getElementById("practiceTag").textContent = tag;
+  } else if (practiceMode === "cloze") {
+    const pool = getClozePool();
+    if (pool.length === 0) {
+      document.getElementById("practiceWord").textContent = "No hay frases de ejemplo para este idioma todavía.";
+      document.getElementById("practiceTag").textContent = "";
+      practiceCurrent = null;
+      return;
+    }
+    const item = pool[Math.floor(Math.random() * pool.length)];
+    const [front, rawBack, tag] = deck[item.idx];
+    const { example } = splitBack(rawBack);
+    const { sentence, translation } = splitExample(example);
+    const re = new RegExp(item.target.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+    const blanked = sentence.replace(re, "_____");
+    practiceCurrent = { idx: item.idx, front, target: item.target, tag };
+    document.getElementById("practiceWord").textContent = blanked + (translation ? " (" + translation + ")" : "");
+    document.getElementById("practiceTag").textContent = tag;
+  }
 }
+
 function buildChoices(deck, correctIdx, correctMeaning) {
   const pool = deck.map((c, i) => i).filter(i => i !== correctIdx);
   for (let i = pool.length - 1; i > 0; i--) {
@@ -981,10 +1081,9 @@ function handleChoice(btn, isCorrect, correctMeaning) {
     if (b.textContent === correctMeaning) b.classList.add("correct");
   });
   if (!isCorrect) btn.classList.add("incorrect");
-  practiceScore.total++;
-  if (isCorrect) practiceScore.correct++;
-  updatePracticeScore();
+  recordAttempt(isCorrect);
 }
+
 document.getElementById("checkBtn").addEventListener("click", checkWriteAnswer);
 document.getElementById("writeInput").addEventListener("keydown", (e) => { if (e.key === "Enter") checkWriteAnswer(); });
 function checkWriteAnswer() {
@@ -998,22 +1097,97 @@ function checkWriteAnswer() {
   input.disabled = true;
   feedback.textContent = isCorrect ? "¡Correcto!" : "Respuesta: " + practiceCurrent.meaning;
   feedback.className = "feedback " + (isCorrect ? "correct" : "incorrect");
-  practiceScore.total++;
-  if (isCorrect) practiceScore.correct++;
-  updatePracticeScore();
+  recordAttempt(isCorrect);
 }
-document.getElementById("nextPracticeBtn").addEventListener("click", () => {
-  document.getElementById("writeInput").disabled = false;
-  nextPracticeItem();
+
+document.getElementById("listenCheckBtn").addEventListener("click", checkListenAnswer);
+document.getElementById("listenInput").addEventListener("keydown", (e) => { if (e.key === "Enter") checkListenAnswer(); });
+function checkListenAnswer() {
+  const input = document.getElementById("listenInput");
+  const feedback = document.getElementById("listenFeedback");
+  if (input.disabled || !practiceCurrent) return;
+  const userVal = normalize(input.value);
+  const targetCandidates = extractCandidateWords(practiceCurrent.front).map(normalize);
+  const isCorrect = userVal.length > 0 && targetCandidates.includes(userVal);
+  input.className = isCorrect ? "correct" : "incorrect";
+  input.disabled = true;
+  feedback.textContent = isCorrect ? "¡Correcto!" : "Era: " + practiceCurrent.front;
+  feedback.className = "feedback " + (isCorrect ? "correct" : "incorrect");
+  recordAttempt(isCorrect);
+}
+document.getElementById("practiceWord").addEventListener("click", () => {
+  if (practiceMode === "listen" && practiceCurrent) speakPracticeWord(practiceCurrent.front);
 });
+
+document.getElementById("clozeCheckBtn").addEventListener("click", checkClozeAnswer);
+document.getElementById("clozeInput").addEventListener("keydown", (e) => { if (e.key === "Enter") checkClozeAnswer(); });
+function checkClozeAnswer() {
+  const input = document.getElementById("clozeInput");
+  const feedback = document.getElementById("clozeFeedback");
+  if (input.disabled || !practiceCurrent) return;
+  const isCorrect = normalize(input.value) === normalize(practiceCurrent.target) && input.value.trim().length > 0;
+  input.className = isCorrect ? "correct" : "incorrect";
+  input.disabled = true;
+  feedback.textContent = isCorrect ? "¡Correcto!" : "Era: " + practiceCurrent.target;
+  feedback.className = "feedback " + (isCorrect ? "correct" : "incorrect");
+  recordAttempt(isCorrect);
+}
+
+document.getElementById("nextPracticeBtn").addEventListener("click", () => nextPracticeItem());
 document.querySelectorAll(".practice-modes button").forEach(btn => {
   btn.addEventListener("click", () => {
     practiceMode = btn.dataset.mode;
     document.querySelectorAll(".practice-modes button").forEach(b => b.classList.toggle("active", b === btn));
     document.getElementById("writeMode").style.display = practiceMode === "write" ? "block" : "none";
     document.getElementById("choiceMode").style.display = practiceMode === "choice" ? "block" : "none";
+    document.getElementById("listenMode").style.display = practiceMode === "listen" ? "block" : "none";
+    document.getElementById("clozeMode").style.display = practiceMode === "cloze" ? "block" : "none";
+    nextPracticeItem();
   });
 });
+
+async function speakPracticeWord(text) {
+  if (!("speechSynthesis" in window)) return;
+  try {
+    voicesCache = voicesCache || await loadVoices();
+    const voice = pickVoice(voicesCache, SPEECH_LANG[currentLang]);
+    if (!voice) { alert("Tu dispositivo no tiene instalada la voz de " + LANG_META[currentLang].name + "."); return; }
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(cleanForSpeech(text));
+    utter.voice = voice; utter.lang = voice.lang; utter.rate = 0.85;
+    window.speechSynthesis.speak(utter);
+  } catch (e) {}
+}
+
+/* ---------- Activity heatmap ---------- */
+function logActivityToday() {
+  const today = new Date().toISOString().slice(0, 10);
+  let days;
+  try { days = JSON.parse(localStorage.getItem("idiomas_flashcards_activity") || "[]"); }
+  catch (e) { days = []; }
+  if (!days.includes(today)) {
+    days.push(today);
+    try { localStorage.setItem("idiomas_flashcards_activity", JSON.stringify(days)); } catch (e) {}
+  }
+  renderHeatmap();
+}
+function renderHeatmap() {
+  let days;
+  try { days = new Set(JSON.parse(localStorage.getItem("idiomas_flashcards_activity") || "[]")); }
+  catch (e) { days = new Set(); }
+  const container = document.getElementById("activityHeatmap");
+  container.innerHTML = "";
+  const todayStr = new Date().toISOString().slice(0, 10);
+  for (let i = 90; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().slice(0, 10);
+    const cell = document.createElement("div");
+    cell.className = "day" + (days.has(key) ? " active" : "") + (key === todayStr ? " today" : "");
+    cell.title = key;
+    container.appendChild(cell);
+  }
+}
 
 function bumpStreak() {
   const today = new Date().toISOString().slice(0, 10);
@@ -1082,6 +1256,7 @@ document.getElementById("speakBtnBack").addEventListener("click", (e) => { e.sto
 
 setLang(currentLang);
 setView("cards");
+renderHeatmap();
 </script>
 </body>
 </html>
