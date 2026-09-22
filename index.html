@@ -446,21 +446,59 @@ function showNext() {
 }
 
 const SPEECH_LANG = { en: "en-US", pt: "pt-BR" };
+let voicesCache = null;
+
+function loadVoices() {
+  return new Promise(resolve => {
+    if (!("speechSynthesis" in window)) { resolve([]); return; }
+    let voices = window.speechSynthesis.getVoices();
+    if (voices.length) { resolve(voices); return; }
+    window.speechSynthesis.onvoiceschanged = () => resolve(window.speechSynthesis.getVoices());
+    setTimeout(() => resolve(window.speechSynthesis.getVoices()), 1000);
+  });
+}
+
+function pickVoice(voices, langTag) {
+  const base = langTag.split("-")[0].toLowerCase();
+  return voices.find(v => v.lang.toLowerCase() === langTag.toLowerCase())
+      || voices.find(v => v.lang.toLowerCase().startsWith(base))
+      || null;
+}
 
 function cleanForSpeech(text) {
-  // strip parenthetical notes and leading "to " so TTS sounds natural
   return text.replace(/\([^)]*\)/g, "").trim();
 }
 
-function speakCurrentFront() {
+async function refreshSpeakAvailability() {
+  const btn = document.getElementById("speakBtn");
+  if (!btn || !("speechSynthesis" in window)) { if (btn) btn.disabled = true; return; }
+  voicesCache = voicesCache || await loadVoices();
+  const voice = pickVoice(voicesCache, SPEECH_LANG[currentLang]);
+  if (!voice) {
+    btn.textContent = "🔇";
+    btn.title = "Falta instalar la voz de este idioma en tu dispositivo (Ajustes > Accesibilidad > Contenido hablado > Voces)";
+  } else {
+    btn.textContent = "🔊";
+    btn.title = "Escuchar pronunciación";
+  }
+}
+
+async function speakCurrentFront() {
   const deck = DECKS[currentLang];
   if (currentIndex === -1 || !deck[currentIndex]) return;
   if (!("speechSynthesis" in window)) return;
   try {
+    voicesCache = voicesCache || await loadVoices();
+    const voice = pickVoice(voicesCache, SPEECH_LANG[currentLang]);
+    if (!voice) {
+      alert("Tu dispositivo no tiene instalada la voz de " + LANG_META[currentLang].name + ". Ve a Ajustes > Accesibilidad > Contenido hablado > Voces y descárgala para poder escuchar la pronunciación correcta.");
+      return;
+    }
     window.speechSynthesis.cancel();
     const text = cleanForSpeech(deck[currentIndex][0]);
     const utter = new SpeechSynthesisUtterance(text);
-    utter.lang = SPEECH_LANG[currentLang];
+    utter.voice = voice;
+    utter.lang = voice.lang;
     utter.rate = 0.9;
     window.speechSynthesis.speak(utter);
   } catch (e) {}
@@ -477,9 +515,7 @@ function renderCard() {
     <div class="card-hint">${showingBack ? "" : "Toca para ver la traducción"}</div>
   `;
   if (showingBack) card.querySelector(".card-text").classList.add("back-text");
-  if (!("speechSynthesis" in window)) {
-    document.getElementById("speakBtn").disabled = true;
-  }
+  refreshSpeakAvailability();
 }
 
 function setButtonsEnabled(enabled) {
