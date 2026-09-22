@@ -29,13 +29,8 @@
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #14161b;
-      --surface: #1c1f26;
-      --ink: #e9e6dd;
-      --ink-muted: #8b8f86;
-      --accent: #d1a24a;
-      --accent-soft: #2c2a1f;
-      --line: #2d2f2a;
+      --bg: #14161b; --surface: #1c1f26; --ink: #e9e6dd; --ink-muted: #8b8f86;
+      --accent: #d1a24a; --accent-soft: #2c2a1f; --line: #2d2f2a;
     }
   }
   :root[data-theme="dark"] {
@@ -52,41 +47,21 @@
   }
   .wrap { width: 100%; max-width: 460px; }
 
-  header { margin-bottom: 18px; }
-  h1 {
-    font-family: var(--serif);
-    font-weight: 600;
-    font-size: 1.65rem;
-    margin: 0 0 4px;
-    letter-spacing: -0.01em;
-  }
-  .sub {
-    font-size: 0.85rem;
-    color: var(--ink-muted);
-    font-style: italic;
-    font-family: var(--serif);
-  }
+  header { margin-bottom: 4px; display: flex; justify-content: space-between; align-items: flex-end; gap: 10px; }
+  h1 { font-family: var(--serif); font-weight: 600; font-size: 1.5rem; margin: 0 0 4px; letter-spacing: -0.01em; }
+  .sub { font-size: 0.82rem; color: var(--ink-muted); font-style: italic; font-family: var(--serif); }
+  .streak { font-family: var(--mono); font-size: 0.74rem; color: var(--accent); white-space: nowrap; }
 
-  nav.tabs {
-    display: flex;
-    gap: 22px;
-    margin: 18px 0 14px;
-    border-bottom: 1px solid var(--line);
-  }
+  nav.tabs { display: flex; gap: 20px; margin: 16px 0 0; border-bottom: 1px solid var(--line); }
   nav.tabs button {
-    background: none; border: none; cursor: pointer;
-    font-family: var(--mono);
-    font-size: 0.82rem;
-    color: var(--ink-muted);
-    padding: 0 0 10px;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -1px;
+    background: none; border: none; cursor: pointer; font-family: var(--mono); font-size: 0.8rem;
+    color: var(--ink-muted); padding: 0 0 9px; border-bottom: 2px solid transparent; margin-bottom: -1px;
   }
   nav.tabs button.active { color: var(--ink); border-bottom-color: var(--accent); }
+  nav.subtabs { margin: 10px 0 16px; border-bottom: none; gap: 14px; }
+  nav.subtabs button { font-size: 0.72rem; padding-bottom: 6px; }
 
-  .field {
-    display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px;
-  }
+  .field { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; }
   .field label { font-family: var(--mono); font-size: 0.72rem; color: var(--ink-muted); white-space: nowrap; }
   select {
     flex: 1; border: none; border-bottom: 1px solid var(--line); background: transparent;
@@ -95,8 +70,8 @@
   select:focus { outline: none; border-bottom-color: var(--accent); }
 
   .ledger {
-    display: flex; justify-content: space-between; font-family: var(--mono);
-    font-size: 0.72rem; color: var(--ink-muted); margin-bottom: 18px;
+    display: flex; flex-wrap: wrap; gap: 4px 14px; font-family: var(--mono);
+    font-size: 0.7rem; color: var(--ink-muted); margin-bottom: 16px;
   }
 
   .scene { perspective: 1400px; height: 250px; margin-bottom: 20px; }
@@ -109,30 +84,26 @@
     position: absolute; inset: 0; backface-visibility: hidden;
     background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    text-align: center; padding: 28px 22px; cursor: pointer;
+    text-align: center; padding: 28px 22px; cursor: pointer; overflow: hidden;
   }
   .face.back { transform: rotateY(180deg); }
 
   .stamp {
-    position: absolute; top: 14px; left: 16px;
-    font-family: var(--mono); font-size: 0.68rem; color: var(--accent);
-    border: 1px dashed var(--accent); border-radius: 50%;
+    position: absolute; top: 14px; left: 16px; font-family: var(--mono); font-size: 0.66rem;
+    color: var(--accent); border: 1px dashed var(--accent); border-radius: 50%;
     width: 56px; height: 56px; display: flex; align-items: center; justify-content: center;
     transform: rotate(-8deg); line-height: 1.1; padding: 4px;
   }
   .speak-btn {
-    position: absolute; top: 12px; right: 12px; width: 38px; height: 38px;
-    border-radius: 50%; border: 1px solid var(--line); background: var(--accent-soft);
-    color: var(--accent); font-size: 1.05rem; display: flex; align-items: center;
-    justify-content: center; cursor: pointer;
+    position: absolute; top: 12px; right: 12px; width: 38px; height: 38px; border-radius: 50%;
+    border: 1px solid var(--line); background: var(--accent-soft); color: var(--accent);
+    font-size: 1.05rem; display: flex; align-items: center; justify-content: center; cursor: pointer;
   }
   .speak-btn:active { transform: scale(0.94); }
 
-  .word {
-    font-family: var(--serif); font-weight: 600; font-size: 1.55rem; line-height: 1.35;
-    max-width: 90%;
-  }
-  .word.back { color: var(--accent); font-weight: 400; }
+  .word { font-family: var(--serif); font-weight: 600; font-size: 1.4rem; line-height: 1.35; max-width: 92%; }
+  .word.back { color: var(--accent); font-weight: 400; font-size: 1.15rem; }
+  .example { font-size: 0.74rem; color: var(--ink-muted); margin-top: 8px; font-style: italic; max-width: 92%; }
   .hint { position: absolute; bottom: 14px; font-size: 0.72rem; color: var(--ink-muted); }
 
   .done { text-align: center; padding: 20px; color: var(--ink-muted); font-family: var(--serif); font-size: 1.05rem; }
@@ -149,64 +120,193 @@
   .rating button[data-q="1"] { border-bottom-color: var(--hard); }
   .rating button[data-q="2"] { border-bottom-color: var(--good); }
   .rating button[data-q="3"] { border-bottom-color: var(--easy); }
-  .rating button:not(:disabled):active { color: var(--ink); }
 
   .foot { display: flex; justify-content: space-between; align-items: baseline; }
   .reset { background: none; border: none; color: var(--ink-muted); font-size: 0.72rem;
     text-decoration: underline; cursor: pointer; font-family: inherit; padding: 0; }
   .colophon { font-family: var(--mono); font-size: 0.68rem; color: var(--ink-muted); }
+
+  .grammar-content details { border-bottom: 1px solid var(--line); padding: 14px 0; }
+  .grammar-content details:first-child { padding-top: 0; }
+  .grammar-content summary { font-family: var(--serif); font-weight: 600; font-size: 1rem; cursor: pointer; }
+  .grammar-content summary::marker { color: var(--accent); }
+  .grammar-content p, .grammar-content li { font-size: 0.85rem; line-height: 1.55; color: var(--ink); }
+  .grammar-content p { margin: 8px 0; }
+  .grammar-content ul { margin: 6px 0 2px 18px; padding: 0; }
+  .grammar-content strong { color: var(--accent); font-weight: 600; }
+  .grammar-content em { font-style: italic; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <h1 id="title">Cuaderno de viaje</h1>
-    <div class="sub">repite hasta que se sienta tuyo</div>
+    <div>
+      <h1 id="title">Cuaderno de viaje</h1>
+      <div class="sub">repite hasta que se sienta tuyo</div>
+    </div>
+    <div class="streak" id="streakDisplay"></div>
   </header>
 
-  <nav class="tabs">
+  <nav class="tabs" id="langTabs">
     <button data-lang="en">Inglés</button>
     <button data-lang="pt">Português</button>
   </nav>
+  <nav class="tabs subtabs" id="viewTabs">
+    <button data-view="cards" class="active">tarjetas</button>
+    <button data-view="grammar">gramática</button>
+  </nav>
 
-  <div class="field">
-    <label for="tagFilter">tema</label>
-    <select id="tagFilter"></select>
-  </div>
+  <section id="viewCards">
+    <div class="field">
+      <label for="tagFilter">tema</label>
+      <select id="tagFilter"></select>
+    </div>
 
-  <div class="ledger">
-    <span id="dueCount">0 pendientes</span>
-    <span id="totalCount">0 en total</span>
-  </div>
+    <div class="ledger">
+      <span id="dueCount">0 pendientes</span>
+      <span id="totalCount">0 en total</span>
+      <span id="masteredCount">0 dominadas</span>
+    </div>
 
-  <div class="scene">
-    <div class="card-inner" id="cardInner">
-      <div class="face front" id="faceFront">
-        <span class="stamp" id="stampFront"></span>
-        <button class="speak-btn" id="speakBtnFront" title="Escuchar pronunciación">🔊</button>
-        <div class="word" id="wordFront">Cargando…</div>
-        <div class="hint">toca para traducir</div>
-      </div>
-      <div class="face back" id="faceBack">
-        <span class="stamp" id="stampBack"></span>
-        <button class="speak-btn" id="speakBtnBack" title="Escuchar pronunciación">🔊</button>
-        <div class="word back" id="wordBack"></div>
+    <div class="scene">
+      <div class="card-inner" id="cardInner">
+        <div class="face front" id="faceFront">
+          <span class="stamp" id="stampFront"></span>
+          <button class="speak-btn" id="speakBtnFront" title="Escuchar pronunciación">🔊</button>
+          <div class="word" id="wordFront">Cargando…</div>
+          <div class="hint">toca para traducir</div>
+        </div>
+        <div class="face back" id="faceBack">
+          <span class="stamp" id="stampBack"></span>
+          <button class="speak-btn" id="speakBtnBack" title="Escuchar pronunciación">🔊</button>
+          <div class="word back" id="wordBack"></div>
+          <div class="example" id="exampleBack"></div>
+        </div>
       </div>
     </div>
-  </div>
-  <div class="done" id="doneMsg" style="display:none"></div>
+    <div class="done" id="doneMsg" style="display:none"></div>
 
-  <div class="rating">
-    <button class="rate" data-q="0">again</button>
-    <button class="rate" data-q="1">hard</button>
-    <button class="rate" data-q="2">good</button>
-    <button class="rate" data-q="3">easy</button>
-  </div>
+    <div class="rating">
+      <button class="rate" data-q="0">again</button>
+      <button class="rate" data-q="1">hard</button>
+      <button class="rate" data-q="2">good</button>
+      <button class="rate" data-q="3">easy</button>
+    </div>
 
-  <div class="foot">
-    <button class="reset" id="resetBtn">reiniciar progreso de este idioma</button>
-    <span class="colophon">flashcards-idiomas</span>
-  </div>
+    <div class="foot">
+      <button class="reset" id="resetBtn">reiniciar progreso de este idioma</button>
+      <span class="colophon">flashcards-idiomas</span>
+    </div>
+  </section>
+
+  <section id="viewGrammar" style="display:none">
+    <div class="grammar-content" id="grammarEn">
+      <details open>
+        <summary>El verbo "to be" (am / is / are)</summary>
+        <p>Es el verbo más básico y no distingue "ser" de "estar" como el español — el inglés usa uno solo para ambos.</p>
+        <ul>
+          <li><strong>I am</strong> a data engineer.</li>
+          <li><strong>You/We/They are</strong> ready.</li>
+          <li><strong>He/She/It is</strong> late.</li>
+        </ul>
+        <p>Contracciones habladas: I'm, you're, he's, she's, it's, we're, they're.</p>
+      </details>
+      <details>
+        <summary>Presente simple vs. presente continuo</summary>
+        <p><strong>Simple</strong> = hábitos y hechos generales. <strong>Continuo</strong> (be + verbo-ing) = algo pasando ahora mismo o temporal.</p>
+        <ul>
+          <li>I <strong>work</strong> at a bank. (hábito)</li>
+          <li>I <strong>am working</strong> on the BEI project this week. (temporal, en curso)</li>
+        </ul>
+        <p>Ojo: verbos como <em>know, like, want, believe</em> casi nunca van en continuo, aunque en español digamos "estoy pensando que...".</p>
+      </details>
+      <details>
+        <summary>Pasado simple: regulares e irregulares</summary>
+        <p>Regulares: se agrega <strong>-ed</strong> (work → worked, deploy → deployed). Los irregulares no siguen un patrón fijo — hay que memorizarlos, practica el tema <em>irregular_verbs</em> en las tarjetas.</p>
+        <ul>
+          <li>I <strong>pushed</strong> the code yesterday. (regular)</li>
+          <li>I <strong>went</strong> to the office. (irregular: go → went)</li>
+        </ul>
+      </details>
+      <details>
+        <summary>Preposiciones de tiempo: in / on / at</summary>
+        <ul>
+          <li><strong>at</strong> — horas exactas: at 9am, at noon, at midnight</li>
+          <li><strong>on</strong> — días y fechas: on Monday, on July 5th</li>
+          <li><strong>in</strong> — meses, años, partes del día: in July, in 2026, in the morning</li>
+        </ul>
+      </details>
+      <details>
+        <summary>Preguntas con do / does / did</summary>
+        <p>El inglés necesita un verbo auxiliar para preguntar o negar en presente y pasado simple — el español no lo necesita.</p>
+        <ul>
+          <li><strong>Do</strong> you use Firebase? / I <strong>don't</strong> use it.</li>
+          <li><strong>Does</strong> she work at BBVA? (he/she/it → does)</li>
+          <li><strong>Did</strong> you deploy it? / I <strong>didn't</strong> deploy it yet.</li>
+        </ul>
+      </details>
+      <details>
+        <summary>Falsos amigos más peligrosos</summary>
+        <p>Practica el tema <em>false_friends</em> en las tarjetas para memorizarlos todos. Los que más confusión causan:</p>
+        <ul>
+          <li><strong>actually</strong> = en realidad (no "actualmente")</li>
+          <li><strong>embarrassed</strong> = avergonzado (no "embarazada")</li>
+          <li><strong>constipated</strong> = estreñido (no "resfriado")</li>
+          <li><strong>billion</strong> = mil millones (no "billón", que en inglés es "trillion")</li>
+        </ul>
+      </details>
+    </div>
+
+    <div class="grammar-content" id="grammarPt" style="display:none">
+      <details open>
+        <summary>Pronombres personales</summary>
+        <ul>
+          <li><strong>eu</strong> = yo</li>
+          <li><strong>tu / você</strong> = tú (en Brasil "você" es lo normal incluso informal; "tu" se usa más en Portugal/sur de Brasil)</li>
+          <li><strong>ele / ela</strong> = él / ella</li>
+          <li><strong>nós</strong> = nosotros</li>
+          <li><strong>vocês</strong> = ustedes</li>
+          <li><strong>eles / elas</strong> = ellos / ellas</li>
+        </ul>
+      </details>
+      <details>
+        <summary>Verbos regulares en presente (-ar, -er, -ir)</summary>
+        <p><strong>falar</strong> (hablar): falo, fala, falamos, falam</p>
+        <p><strong>comer</strong> (comer): como, come, comemos, comem</p>
+        <p><strong>abrir</strong> (abrir): abro, abre, abrimos, abrem</p>
+        <p>A diferencia del español, el portugués junta "él/ella" y "usted" (você) en una sola forma, y "ellos" y "ustedes" (vocês) en otra — practica el tema <em>conjugation</em> en las tarjetas.</p>
+      </details>
+      <details>
+        <summary>Ser vs. estar vs. ficar</summary>
+        <p>El portugués tiene <strong>tres</strong> verbos donde el español usa dos:</p>
+        <ul>
+          <li><strong>ser</strong> = identidad o característica permanente: Eu sou peruano.</li>
+          <li><strong>estar</strong> = estado temporal: Eu estou cansado.</li>
+          <li><strong>ficar</strong> = cambio de estado o ubicación: Fiquei feliz / A loja fica na esquina.</li>
+        </ul>
+      </details>
+      <details>
+        <summary>Sonidos nasales (ão, õe, ã)</summary>
+        <p>No existen en español — se pronuncian dejando salir el aire por la nariz, sin cerrar del todo con "n" o "m".</p>
+        <ul>
+          <li><strong>não</strong> (no)</li>
+          <li><strong>pão</strong> (pan)</li>
+          <li><strong>eles põem</strong> (ellos ponen)</li>
+        </ul>
+        <p>Usa el botón 🔊 en las tarjetas para escuchar estos sonidos en palabras reales.</p>
+      </details>
+      <details>
+        <summary>Falsos amigos con el español</summary>
+        <p>El parecido entre los dos idiomas hace que estas trampas sean más peligrosas — practica el tema <em>false_friends</em> en las tarjetas. Los más comunes:</p>
+        <ul>
+          <li><strong>embaraçada</strong> = avergonzada (no "embarazada")</li>
+          <li><strong>oficina</strong> = taller mecánico (no oficina de trabajo, que es "escritório")</li>
+          <li><strong>rato</strong> = ratón (no "un rato"/momento)</li>
+          <li><strong>esquisito</strong> = raro/extraño (no "exquisito"/delicioso)</li>
+        </ul>
+      </details>
+    </div>
+  </section>
 </div>
 
 <script>
@@ -348,7 +448,57 @@ const DECKS = {
     ["Never mind","No importa / olvídalo","conversation"],
     ["It's up to you","Depende de ti / tú decides","conversation"],
     ["Let's see","Veamos","conversation"],
-    ["Just in case","Por si acaso","conversation"]
+    ["Just in case","Por si acaso","conversation"],
+    ["go — went — gone","ir","irregular_verbs"],
+    ["be — was/were — been","ser/estar","irregular_verbs"],
+    ["have — had — had","tener","irregular_verbs"],
+    ["do — did — done","hacer","irregular_verbs"],
+    ["make — made — made","hacer/fabricar","irregular_verbs"],
+    ["see — saw — seen","ver","irregular_verbs"],
+    ["take — took — taken","tomar/llevar","irregular_verbs"],
+    ["get — got — gotten","obtener/conseguir","irregular_verbs"],
+    ["come — came — come","venir","irregular_verbs"],
+    ["know — knew — known","saber/conocer","irregular_verbs"],
+    ["think — thought — thought","pensar","irregular_verbs"],
+    ["find — found — found","encontrar","irregular_verbs"],
+    ["give — gave — given","dar","irregular_verbs"],
+    ["tell — told — told","decir/contar","irregular_verbs"],
+    ["become — became — become","convertirse en","irregular_verbs"],
+    ["write — wrote — written","escribir","irregular_verbs"],
+    ["build — built — built","construir","irregular_verbs"],
+    ["send — sent — sent","enviar","irregular_verbs"],
+    ["break — broke — broken","romper","irregular_verbs"],
+    ["run — ran — run","correr","irregular_verbs"],
+    ["bring — brought — brought","traer","irregular_verbs"],
+    ["begin — began — begun","empezar","irregular_verbs"],
+    ["choose — chose — chosen","elegir","irregular_verbs"],
+    ["speak — spoke — spoken","hablar","irregular_verbs"],
+    ["understand — understood — understood","entender","irregular_verbs"],
+    ["read — read — read","leer","irregular_verbs"],
+    ["set — set — set","establecer/configurar","irregular_verbs"],
+    ["pay — paid — paid","pagar","irregular_verbs"],
+    ["meet — met — met","conocer/reunirse con","irregular_verbs"],
+    ["lose — lost — lost","perder","irregular_verbs"],
+    ["actually","en realidad — ex: I actually agree with you","false_friends"],
+    ["embarrassed","avergonzado — ex: I felt so embarrassed","false_friends"],
+    ["exit","salida — ex: Where is the exit?","false_friends"],
+    ["success","éxito — ex: The project was a success","false_friends"],
+    ["to realize","darse cuenta — ex: I realized I was wrong","false_friends"],
+    ["sensible","sensato — ex: That's a sensible decision","false_friends"],
+    ["library","biblioteca — ex: I borrowed a book from the library","false_friends"],
+    ["large","grande — ex: a large database","false_friends"],
+    ["to assist","ayudar — ex: Can you assist me?","false_friends"],
+    ["to attend","asistir a — ex: I will attend the meeting","false_friends"],
+    ["argument","discusión/pelea — ex: We had an argument","false_friends"],
+    ["constipated","estreñido — ex: He felt constipated after the trip","false_friends"],
+    ["to molest","abusar sexualmente (NO significa 'molestar' — usa 'to bother'/'to annoy')","false_friends"],
+    ["to pretend","fingir — ex: She pretended not to notice","false_friends"],
+    ["parents","padres — ex: My parents live in Lima","false_friends"],
+    ["fabric","tela — ex: This shirt is made of soft fabric","false_friends"],
+    ["lecture","conferencia/clase magistral — ex: I attended a lecture","false_friends"],
+    ["rope","cuerda — ex: Tie the rope tightly","false_friends"],
+    ["carpet","alfombra — ex: The carpet is new","false_friends"],
+    ["billion","mil millones — ex: The company is worth a billion dollars","false_friends"]
   ],
   pt: [
     ["bom dia","buenos días","everyday"],
@@ -456,7 +606,31 @@ const DECKS = {
     ["tem wifi?","¿hay wifi?","travel"],
     ["para a esquerda","a la izquierda","travel"],
     ["para a direita","a la derecha","travel"],
-    ["em frente","derecho / adelante","travel"]
+    ["em frente","derecho / adelante","travel"],
+    ["eu falo / você fala / nós falamos","yo hablo / tú hablas / nosotros hablamos — falar (-ar)","conjugation"],
+    ["eu como / você come / nós comemos","yo como / tú comes / nosotros comemos — comer (-er)","conjugation"],
+    ["eu abro / você abre / nós abrimos","yo abro / tú abres / nosotros abrimos — abrir (-ir)","conjugation"],
+    ["eu sou / você é / nós somos","yo soy / tú eres / nosotros somos — ser (permanente)","conjugation"],
+    ["eu estou / você está / nós estamos","yo estoy / tú estás / nosotros estamos — estar (temporal)","conjugation"],
+    ["eu fico / você fica / nós ficamos","yo me quedo / tú te quedas — ficar (cambio/ubicación)","conjugation"],
+    ["eu tenho / você tem / nós temos","yo tengo / tú tienes / nosotros tenemos — ter","conjugation"],
+    ["eu vou / você vai / nós vamos","yo voy / tú vas / nosotros vamos — ir","conjugation"],
+    ["embaraçada","avergonzada (NO 'embarazada' — eso es 'grávida')","false_friends"],
+    ["oficina","taller mecánico (NO oficina de trabajo, que es 'escritório')","false_friends"],
+    ["rato","ratón (NO 'un rato'/momento)","false_friends"],
+    ["esquisito","raro / extraño (NO 'exquisito'/delicioso)","false_friends"],
+    ["polvo","pulpo (NO 'polvo'/dust, que es 'poeira')","false_friends"],
+    ["presunto","jamón (NO 'presunto'/alleged)","false_friends"],
+    ["borracha","goma de borrar (NO 'mujer ebria')","false_friends"],
+    ["espantoso","increíble/asombroso (NO 'horrible/aterrador')","false_friends"],
+    ["romance","novela (libro) — 'romance' amoroso se dice 'romance' también, pero 'novela' en PT es telenovela","false_friends"],
+    ["brincar","jugar (NO 'saltar')","false_friends"],
+    ["acordar","despertar (NO 'ponerse de acuerdo')","false_friends"],
+    ["largo","ancho (NO 'long'/longitud, que es 'comprido')","false_friends"],
+    ["salsa","perejil (NO 'sauce', que es 'molho')","false_friends"],
+    ["cachorro","perro en general (en Brasil, no solo cría/cachorro)","false_friends"],
+    ["pasta","carpeta/archivo (NO 'pasta' de comida, que es 'massa')","false_friends"],
+    ["copo","vaso para beber (NO 'copo de nieve', que es 'floco')","false_friends"]
   ]
 };
 
@@ -468,6 +642,7 @@ const SPEECH_LANG = { en: "en-US", pt: "pt-BR" };
 
 const STORAGE_PREFIX = "idiomas_flashcards_progress_";
 let currentLang = localStorage.getItem("idiomas_flashcards_lang") || "en";
+let currentView = "cards";
 let progress = {};
 let currentIndex = -1;
 let showingBack = false;
@@ -486,11 +661,30 @@ function getCard(i) {
   return progress[key];
 }
 
+function splitBack(rawBack) {
+  const idx = rawBack.indexOf(" — ex:");
+  if (idx === -1) {
+    const idx2 = rawBack.indexOf(" — ");
+    if (idx2 === -1) return { meaning: rawBack, example: "" };
+    return { meaning: rawBack.slice(0, idx2), example: rawBack.slice(idx2 + 3) };
+  }
+  return { meaning: rawBack.slice(0, idx), example: rawBack.slice(idx + 6).trim() };
+}
+
+function setView(view) {
+  currentView = view;
+  document.querySelectorAll("#viewTabs button").forEach(b => b.classList.toggle("active", b.dataset.view === view));
+  document.getElementById("viewCards").style.display = view === "cards" ? "block" : "none";
+  document.getElementById("viewGrammar").style.display = view === "grammar" ? "block" : "none";
+}
+
 function setLang(lang) {
   currentLang = lang;
   try { localStorage.setItem("idiomas_flashcards_lang", lang); } catch (e) {}
-  document.querySelectorAll("nav.tabs button").forEach(b => b.classList.toggle("active", b.dataset.lang === lang));
+  document.querySelectorAll("#langTabs button").forEach(b => b.classList.toggle("active", b.dataset.lang === lang));
   document.getElementById("title").textContent = LANG_META[lang].title;
+  document.getElementById("grammarEn").style.display = lang === "en" ? "block" : "none";
+  document.getElementById("grammarPt").style.display = lang === "pt" ? "block" : "none";
   loadProgress();
   populateTagFilter();
   buildQueue();
@@ -521,8 +715,10 @@ function buildQueue() {
 function updateStats(tagVal) {
   const deck = DECKS[currentLang];
   const totalForTag = deck.filter(c => tagVal === "all" || c[2] === tagVal).length;
+  const mastered = Object.values(progress).filter(c => c.interval >= 21).length;
   document.getElementById("dueCount").textContent = filteredIds.length + " pendientes";
   document.getElementById("totalCount").textContent = totalForTag + " en total";
+  document.getElementById("masteredCount").textContent = mastered + " dominadas";
 }
 
 function showNext() {
@@ -532,7 +728,7 @@ function showNext() {
     document.querySelector(".scene").style.display = "none";
     const msg = document.getElementById("doneMsg");
     msg.style.display = "block";
-    msg.textContent = "Por ahora no hay tarjetas pendientes en este tema. Vuelve más tarde o cambia de tema.";
+    msg.textContent = "Por ahora no hay tarjetas pendientes en este tema. Vuelve más tarde, cambia de tema, o revisa la pestaña de gramática.";
     setButtonsEnabled(false);
     currentIndex = -1;
     return;
@@ -546,9 +742,11 @@ function showNext() {
 
 function renderCard() {
   const deck = DECKS[currentLang];
-  const [front, back, tag] = deck[currentIndex];
+  const [front, rawBack, tag] = deck[currentIndex];
+  const { meaning, example } = splitBack(rawBack);
   document.getElementById("wordFront").textContent = front;
-  document.getElementById("wordBack").textContent = back;
+  document.getElementById("wordBack").textContent = meaning;
+  document.getElementById("exampleBack").textContent = example;
   document.getElementById("stampFront").textContent = tag;
   document.getElementById("stampBack").textContent = tag;
   refreshSpeakAvailability();
@@ -564,28 +762,21 @@ function flip() {
   document.getElementById("cardInner").classList.toggle("flipped", showingBack);
 }
 
-document.getElementById("faceFront").addEventListener("click", (e) => {
-  if (e.target.closest(".speak-btn")) return;
-  flip();
-});
-document.getElementById("faceBack").addEventListener("click", (e) => {
-  if (e.target.closest(".speak-btn")) return;
-  flip();
-});
+document.getElementById("faceFront").addEventListener("click", (e) => { if (!e.target.closest(".speak-btn")) flip(); });
+document.getElementById("faceBack").addEventListener("click", (e) => { if (!e.target.closest(".speak-btn")) flip(); });
 
 document.querySelectorAll(".rate").forEach(btn => {
   btn.addEventListener("click", () => {
     if (currentIndex === -1) return;
     rate(currentIndex, parseInt(btn.dataset.q, 10));
     filteredIds.shift();
-    document.getElementById("dueCount").textContent = filteredIds.length + " pendientes";
+    updateStats(document.getElementById("tagFilter").value);
     showNext();
   });
 });
 
-document.querySelectorAll("nav.tabs button").forEach(btn => {
-  btn.addEventListener("click", () => setLang(btn.dataset.lang));
-});
+document.querySelectorAll("#langTabs button").forEach(btn => btn.addEventListener("click", () => setLang(btn.dataset.lang)));
+document.querySelectorAll("#viewTabs button").forEach(btn => btn.addEventListener("click", () => setView(btn.dataset.view)));
 document.getElementById("tagFilter").addEventListener("change", () => { buildQueue(); showNext(); });
 
 function rate(i, q) {
@@ -613,6 +804,24 @@ document.getElementById("resetBtn").addEventListener("click", () => {
   }
 });
 
+function bumpStreak() {
+  const today = new Date().toISOString().slice(0, 10);
+  let s;
+  try { s = JSON.parse(localStorage.getItem("idiomas_flashcards_streak") || "null") || { last: null, count: 0 }; }
+  catch (e) { s = { last: null, count: 0 }; }
+  if (s.last !== today) {
+    if (s.last) {
+      const diffDays = Math.round((new Date(today) - new Date(s.last)) / 86400000);
+      s.count = diffDays === 1 ? s.count + 1 : 1;
+    } else { s.count = 1; }
+    s.last = today;
+    try { localStorage.setItem("idiomas_flashcards_streak", JSON.stringify(s)); } catch (e) {}
+  }
+  return s;
+}
+const streak = bumpStreak();
+document.getElementById("streakDisplay").textContent = streak.count > 0 ? "🔥 " + streak.count + (streak.count === 1 ? " día" : " días") : "";
+
 function loadVoices() {
   return new Promise(resolve => {
     if (!("speechSynthesis" in window)) { resolve([]); return; }
@@ -627,7 +836,7 @@ function pickVoice(voices, langTag) {
   return voices.find(v => v.lang.toLowerCase() === langTag.toLowerCase())
       || voices.find(v => v.lang.toLowerCase().startsWith(base)) || null;
 }
-function cleanForSpeech(text) { return text.replace(/\([^)]*\)/g, "").trim(); }
+function cleanForSpeech(text) { return text.replace(/\([^)]*\)/g, "").replace(/—.*$/, "").replace(/\/.*$/, "").trim(); }
 
 async function refreshSpeakAvailability() {
   const btns = [document.getElementById("speakBtnFront"), document.getElementById("speakBtnBack")];
@@ -661,6 +870,7 @@ document.getElementById("speakBtnFront").addEventListener("click", (e) => { e.st
 document.getElementById("speakBtnBack").addEventListener("click", (e) => { e.stopPropagation(); speakCurrentFront(); });
 
 setLang(currentLang);
+setView("cards");
 </script>
 </body>
 </html>
