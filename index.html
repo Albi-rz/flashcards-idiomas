@@ -57,6 +57,22 @@
   .heatmap .day.active { background: var(--accent); }
   .heatmap .day.today { outline: 1px solid var(--ink-muted); outline-offset: 1px; }
 
+  .goal-row { display: flex; align-items: center; gap: 8px; margin: 8px 0 2px; }
+  .goal-track { flex: 1; height: 5px; border-radius: 3px; background: var(--line); overflow: hidden; }
+  .goal-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.4s ease; width: 0%; }
+  .goal-label { font-family: var(--mono); font-size: 0.66rem; color: var(--ink-muted); white-space: nowrap; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px);
+    background: var(--ink); color: var(--bg); font-family: var(--serif); font-size: 0.9rem;
+    padding: 12px 20px; border-radius: 10px; opacity: 0; pointer-events: none;
+    transition: opacity 0.35s ease, transform 0.35s ease; z-index: 50; text-align: center; max-width: 88%;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @keyframes pop { 0% { transform: scale(1); } 40% { transform: scale(1.12); } 100% { transform: scale(1); } }
+  .pop { animation: pop 0.28s ease; }
+
   nav.tabs { display: flex; gap: 18px; margin: 16px 0 0; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
   nav.tabs button {
     background: none; border: none; cursor: pointer; font-family: var(--mono); font-size: 0.8rem;
@@ -191,6 +207,11 @@
     <div class="streak" id="streakDisplay"></div>
   </header>
   <div class="heatmap" id="activityHeatmap" title="Días de estudio (últimas 13 semanas)"></div>
+  <div class="goal-row">
+    <div class="goal-track"><div class="goal-fill" id="goalFill"></div></div>
+    <span class="goal-label" id="goalLabel">0/15 hoy</span>
+  </div>
+  <div class="toast" id="toast"></div>
 
   <nav class="tabs" id="langTabs">
     <button data-lang="en">Inglés</button>
@@ -915,8 +936,22 @@ document.querySelectorAll(".rate").forEach(btn => {
     rate(currentIndex, parseInt(btn.dataset.q, 10));
     filteredIds.shift();
     updateStats(document.getElementById("tagFilter").value);
+    pop(document.getElementById("dueCount"));
     showNext();
   });
+});
+
+document.addEventListener("keydown", (e) => {
+  const tag = (document.activeElement && document.activeElement.tagName) || "";
+  if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
+  if (currentView === "cards") {
+    if (e.code === "Space" || e.key === "Enter") { e.preventDefault(); flip(); }
+    else if (["1", "2", "3", "4"].includes(e.key) && currentIndex !== -1) {
+      const q = parseInt(e.key, 10) - 1;
+      const btn = document.querySelector('.rate[data-q="' + q + '"]');
+      if (btn && !btn.disabled) btn.click();
+    }
+  }
 });
 
 document.querySelectorAll("#langTabs button").forEach(btn => btn.addEventListener("click", () => setLang(btn.dataset.lang)));
@@ -963,8 +998,16 @@ function answerCandidates(meaning) {
   const base = meaning.split("(")[0];
   return base.split(/\/|,| o /).map(s => normalize(s)).filter(Boolean);
 }
+function pop(el) {
+  if (!el) return;
+  el.classList.remove("pop");
+  void el.offsetWidth;
+  el.classList.add("pop");
+}
 function updatePracticeScore() {
-  document.getElementById("practiceScore").textContent = practiceScore.correct + " / " + practiceScore.total + " correctas en esta sesión";
+  const el = document.getElementById("practiceScore");
+  el.textContent = practiceScore.correct + " / " + practiceScore.total + " correctas en esta sesión";
+  pop(el);
 }
 function recordAttempt(isCorrect) {
   practiceScore.total++;
@@ -1097,6 +1140,7 @@ function checkWriteAnswer() {
   input.disabled = true;
   feedback.textContent = isCorrect ? "¡Correcto!" : "Respuesta: " + practiceCurrent.meaning;
   feedback.className = "feedback " + (isCorrect ? "correct" : "incorrect");
+  pop(feedback);
   recordAttempt(isCorrect);
 }
 
@@ -1113,6 +1157,7 @@ function checkListenAnswer() {
   input.disabled = true;
   feedback.textContent = isCorrect ? "¡Correcto!" : "Era: " + practiceCurrent.front;
   feedback.className = "feedback " + (isCorrect ? "correct" : "incorrect");
+  pop(feedback);
   recordAttempt(isCorrect);
 }
 document.getElementById("practiceWord").addEventListener("click", () => {
@@ -1130,6 +1175,7 @@ function checkClozeAnswer() {
   input.disabled = true;
   feedback.textContent = isCorrect ? "¡Correcto!" : "Era: " + practiceCurrent.target;
   feedback.className = "feedback " + (isCorrect ? "correct" : "incorrect");
+  pop(feedback);
   recordAttempt(isCorrect);
 }
 
@@ -1159,7 +1205,45 @@ async function speakPracticeWord(text) {
   } catch (e) {}
 }
 
-/* ---------- Activity heatmap ---------- */
+/* ---------- Activity heatmap + daily goal ---------- */
+const DAILY_GOAL = 15;
+let goalCelebrated = false;
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2600);
+}
+
+function getTodayCount() {
+  const today = new Date().toISOString().slice(0, 10);
+  let rec;
+  try { rec = JSON.parse(localStorage.getItem("idiomas_flashcards_today") || "null"); }
+  catch (e) { rec = null; }
+  if (!rec || rec.date !== today) return 0;
+  return rec.count;
+}
+function bumpTodayCount() {
+  const today = new Date().toISOString().slice(0, 10);
+  let rec;
+  try { rec = JSON.parse(localStorage.getItem("idiomas_flashcards_today") || "null"); }
+  catch (e) { rec = null; }
+  if (!rec || rec.date !== today) rec = { date: today, count: 0 };
+  rec.count++;
+  try { localStorage.setItem("idiomas_flashcards_today", JSON.stringify(rec)); } catch (e) {}
+  renderGoal(rec.count);
+  if (rec.count === DAILY_GOAL && !goalCelebrated) {
+    goalCelebrated = true;
+    showToast("🎉 ¡Meta diaria alcanzada! Puedes seguir si quieres, o volver mañana.");
+  }
+}
+function renderGoal(count) {
+  const pct = Math.min(100, Math.round((count / DAILY_GOAL) * 100));
+  document.getElementById("goalFill").style.width = pct + "%";
+  document.getElementById("goalLabel").textContent = count + "/" + DAILY_GOAL + " hoy";
+}
+
 function logActivityToday() {
   const today = new Date().toISOString().slice(0, 10);
   let days;
@@ -1170,6 +1254,7 @@ function logActivityToday() {
     try { localStorage.setItem("idiomas_flashcards_activity", JSON.stringify(days)); } catch (e) {}
   }
   renderHeatmap();
+  bumpTodayCount();
 }
 function renderHeatmap() {
   let days;
@@ -1257,6 +1342,9 @@ document.getElementById("speakBtnBack").addEventListener("click", (e) => { e.sto
 setLang(currentLang);
 setView("cards");
 renderHeatmap();
+const initialTodayCount = getTodayCount();
+renderGoal(initialTodayCount);
+goalCelebrated = initialTodayCount >= DAILY_GOAL;
 </script>
 </body>
 </html>
